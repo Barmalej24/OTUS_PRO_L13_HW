@@ -7,7 +7,7 @@ namespace OTUS_PRO_L13_HW.Test
     /// <summary>
     /// Класс для тестирования CSV
     /// </summary>
-    public class CSVTest
+    public class CSVTest : ISrializable<F>
     {
         public CSVTest() { }
 
@@ -19,11 +19,12 @@ namespace OTUS_PRO_L13_HW.Test
             var sb = new StringBuilder();
             var sw = new Stopwatch();
             int count = 0;
+            var path = "csv.csv";
 
             sw.Start();
             while (count < iterator)
             {
-                var csvString = Serialize();
+                var csvString = Serialize(F.Get());
                 sb.AppendLine($"CSV => {csvString}");
                 count++;
             }
@@ -36,13 +37,13 @@ namespace OTUS_PRO_L13_HW.Test
 
             Console.WriteLine($"Время сериализации CSV {sw.Elapsed.TotalMilliseconds} ms");
 
-            SerializeSave();
+            SerializeSave(F.Get(), path);
 
             count = 0;
             sw.Restart();
             while (count < iterator)
             {
-                Deserialize();
+                Deserialize(path);
                 count++;
             }
             sw.Stop();
@@ -53,34 +54,41 @@ namespace OTUS_PRO_L13_HW.Test
         /// <summary>
         /// Сериализация
         /// </summary>
-        private string Serialize()
+        public string Serialize(F entity)
         {
             var csv = new CSVSerializator<F>();
-            var tf = F.Get();
-            var csvString = csv.Serialize(tf);
+            var csvString = csv.Serialize(entity);
 
             return csvString;
         }
         /// <summary>
         /// Сериализация в файл
         /// </summary>
-        private void SerializeSave()
+        private void SerializeSave(F entity, string path)
         {
             var csv = new CSVSerializator<F>();
-            var tf = F.Get();
-            var csvString = csv.Serialize(tf);
-            using var streamCreate = new FileStream("csv.csv", FileMode.Create, FileAccess.Write);
-            csv.SerializeSave(streamCreate, tf);
+            using var streamCreate = new FileStream(path, FileMode.Create, FileAccess.Write);
+            csv.SerializeSave(streamCreate, entity);
+        }
+
+        /// <summary>
+        /// Десериализация в коллекцию
+        /// </summary>
+        public IEnumerable<F> DeserializeCollection(string path)
+        {
+            var csv = new CSVSerializator<F>();
+            using var streamRead = new FileStream(path, FileMode.Open, FileAccess.Read);
+            return csv.Deserialize(streamRead);
         }
 
         /// <summary>
         /// Десериализация
         /// </summary>
-        private void Deserialize()
+        public F Deserialize(string path)
         {
             var csv = new CSVSerializator<F>();
-            using var streamRead = new FileStream("csv.csv", FileMode.Open, FileAccess.Read);
-            var classesF = csv.Deserialize(streamRead);
+            using var streamRead = new FileStream(path, FileMode.Open, FileAccess.Read);
+            return csv.Deserialize(streamRead).FirstOrDefault();
         }
 
         /// <summary>

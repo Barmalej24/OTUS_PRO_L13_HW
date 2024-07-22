@@ -7,7 +7,7 @@ namespace OTUS_PRO_L13_HW.Test
     /// <summary>
     /// Класс для тестирования JSON
     /// </summary>
-    public class JsonTest
+    public class JsonTest : ISrializable<F>
     {
         public JsonTest() { }
 
@@ -23,7 +23,7 @@ namespace OTUS_PRO_L13_HW.Test
             sw.Start();
             while (count < iterator)
             {
-                var stringJson = Serialize();
+                var stringJson = Serialize(F.Get());
                 sb.AppendLine($"Json => {stringJson}");
                 count++;
             }
@@ -40,10 +40,20 @@ namespace OTUS_PRO_L13_HW.Test
         /// <summary>
         /// Сериализация
         /// </summary>
-        private string Serialize()
+        public string Serialize(F entity)
         {
-            var tf = F.Get();
-            return JsonSerializer.Serialize(tf);
+            return JsonSerializer.Serialize(entity);
+        }
+
+        /// <summary>
+        /// Десериализация
+        /// </summary>
+        public F Deserialize(string path)
+        {           
+            using var streamRead = new FileStream(path, FileMode.Open, FileAccess.Read);
+            var reader = new StreamReader(streamRead);
+
+            return JsonSerializer.Deserialize<F>(reader.ReadToEnd());
         }
 
         /// <summary>
@@ -57,5 +67,7 @@ namespace OTUS_PRO_L13_HW.Test
             sw.Stop();
             Console.WriteLine($"Время печати JSON {sw.Elapsed.TotalMilliseconds} ms");
         }
+
+        
     }
 }
